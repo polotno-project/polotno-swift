@@ -1,0 +1,6 @@
+.DS_Store
+web-editor/node_modules/
+web-editor/dist/
+web-editor/.vite/
+
+
