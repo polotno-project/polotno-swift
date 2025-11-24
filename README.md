@@ -43,7 +43,6 @@ The solution is a hybrid application that embeds a web-based editor into a nativ
 ### WebView Configuration
 
 - **WKWebView**: The core component is a `WKWebView` configured to load local content (`EditorWebView.swift`).
-- **Local File Access**: To load local assets (images, scripts) inside the web view, we explicitly enable file access via private APIs (`setAllowFileAccessFromFileURLs:`). This is required because the editor is served from the app bundle (`file://`), not a remote server.
 - **Single-File Bundle**: The React app is built using `vite-plugin-singlefile`, which inlines all JS and CSS into a single `index.html`. This prevents module loading errors and cross-origin issues common with local file loading in WKWebView.
 - **Viewport**: The web page is configured with `user-scalable=no` to prevent zooming and provide a native app feel.
 
@@ -55,7 +54,6 @@ While the editor code is bundled locally, Polotno relies on external APIs for ce
 
 ### Limitations
 
-- **Private APIs**: The current implementation uses `setAllowFileAccessFromFileURLs:` which is a private API on iOS. For App Store submission, you may need to serve the editor via a local `GCDWebServer` or similar scheme handler to avoid using private selectors.
 - **Memory**: High-resolution exports or complex designs may consume significant memory; test on older devices if targeting a broad user base.
 
 ## Data flow
