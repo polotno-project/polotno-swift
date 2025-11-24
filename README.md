@@ -1,5 +1,7 @@
 # Polotno Swift Demo
 
+![Screenshots](./screens.png)
+
 Native SwiftUI sample app that launches an embedded Polotno editor (React + Vite) inside a `WKWebView`. The app passes JSON design data to the web editor, listens for a save event, and renders the returned preview image in SwiftUI.
 
 ## Prerequisites
@@ -18,14 +20,14 @@ Native SwiftUI sample app that launches an embedded Polotno editor (React + Vite
 ## Building the embedded editor
 
 ```bash
-cd /Users/lavrton/Projects/polotno-swift/web-editor
+cd ./web-editor
 npm install
 npm run build:ios
 ```
 
 `npm run build:ios` runs `vite build` and copies the output into `PolotnoSwift/Editor/` so Xcode bundles the latest editor.
 
-> **Note:** Set `VITE_POLOTNO_API_KEY` in a `.env` file if you have a custom Polotno API key. The default demo key is fine for local testing.
+> **Note:** Make sure to use valid API key for creating polotno store in `App.jsx`
 
 ## Running the iOS app
 
@@ -33,6 +35,28 @@ npm run build:ios
 2. Select an iOS 16+ simulator or device.
 3. Build & run.
 4. Tap **Open Editor** to launch the embedded Polotno editor. After tapping **Save & Close**, the editor posts `{ docJson, previewBase64 }` back to Swift via `window.webkit.messageHandlers.editor`. The sheet dismisses and the SwiftUI view renders the returned PNG.
+
+## How it works
+
+The solution is a hybrid application that embeds a web-based editor into a native iOS context.
+
+### WebView Configuration
+
+- **WKWebView**: The core component is a `WKWebView` configured to load local content (`EditorWebView.swift`).
+- **Local File Access**: To load local assets (images, scripts) inside the web view, we explicitly enable file access via private APIs (`setAllowFileAccessFromFileURLs:`). This is required because the editor is served from the app bundle (`file://`), not a remote server.
+- **Single-File Bundle**: The React app is built using `vite-plugin-singlefile`, which inlines all JS and CSS into a single `index.html`. This prevents module loading errors and cross-origin issues common with local file loading in WKWebView.
+- **Viewport**: The web page is configured with `user-scalable=no` to prevent zooming and provide a native app feel.
+
+### Online Requirement
+
+While the editor code is bundled locally, Polotno relies on external APIs for certain assets (stock photos, templates, fonts, etc.). The device must be online for these features to work properly.
+
+> **Note for Enterprise Clients**: Full offline support (bundling all assets and fonts) is available for enterprise licenses. Contact support for details.
+
+### Limitations
+
+- **Private APIs**: The current implementation uses `setAllowFileAccessFromFileURLs:` which is a private API on iOS. For App Store submission, you may need to serve the editor via a local `GCDWebServer` or similar scheme handler to avoid using private selectors.
+- **Memory**: High-resolution exports or complex designs may consume significant memory; test on older devices if targeting a broad user base.
 
 ## Data flow
 
